@@ -30,7 +30,7 @@ PATTERN = re.compile(
     r"((/?)|"  # 最后一个 / 或空
     r"(/[\da-zA-Z_!~*'().;?:@&=+$,%#-]+)+/?)$"  # 路径
 )  # 匹配 URL
-COPIED = ''  # 剪贴板上一次的内容
+COPIED = ""  # 剪贴板上一次的内容
 
 
 def main():
@@ -43,15 +43,15 @@ def main():
     - 生成短链接
     :return:
     """
-    data = pyperclip.paste().strip().strip('\n').strip('\r').strip('\t')
-    data = 'http://' + data if not data.startswith('http') else data
+    data = pyperclip.paste().strip().strip("\n").strip("\r").strip("\t")
+    data = "http://" + data if not data.startswith("http") else data
     if PATTERN.match(data):
         url = create(data)
         if url:
             global COPIED
             COPIED = url
             pyperclip.copy(url)
-            notify('短链接已生成并复制', f'新链接: {url}\n原链接: {data[:100]}')
+            notify("短链接已生成并复制", f"新链接: {url}\n原链接: {data[:100]}")
 
 
 def monitor():
@@ -75,23 +75,23 @@ def create(url: str) -> Optional[str]:
     """
     try:
         r = requests.post(
-            f'{ENDPOINT}/rest/v2/short-urls',
+            f"{ENDPOINT}/rest/v2/short-urls",
             headers={
-                'accept': 'application/json',
-                'content-type': 'application/json',
-                'x-api-key': KEY,
+                "accept": "application/json",
+                "content-type": "application/json",
+                "x-api-key": KEY,
             },
             json={
-                'longUrl': url,
+                "longUrl": url,
             },
         )
         r.raise_for_status()
 
-        return r.json()['shortUrl']
+        return r.json()["shortUrl"]
     except requests.RequestException as e:
-        notify('请求 API 失败', str(e))
+        notify("请求 API 失败", str(e))
     except Exception as e:
-        notify('生成短链接错误', str(e))
+        notify("生成短链接错误", str(e))
     return None
 
 
@@ -111,23 +111,23 @@ def notify(title, message: Optional[str] = None, timeout: Optional[int] = 2):
 
 
 def stop():
-    notify('Shlink 已退出', '再见')
+    notify("Shlink 已退出", "再见")
     exit(0)
 
 
-if __name__ == '__main__':
-    os.environ['NO_PROXY'] = '*'
+if __name__ == "__main__":
+    os.environ["NO_PROXY"] = "*"
 
     try:
-        notify('Shlink 已启动', '请按 Ctrl + Shift + Alt + E 退出')
+        notify("Shlink 已启动", "请按 Ctrl + Shift + Alt + E 退出")
 
         mt = Thread(target=monitor)  # 启动监控线程
         mt.daemon = True
         mt.start()
 
-        keyboard.wait('ctrl+shift+alt+e')
+        keyboard.wait("ctrl+shift+alt+e")
         # 检测到 Ctrl + Shift + Alt + E 时退出
         stop()
     except Exception as e:
-        notify('Shlink 发生错误, 自动退出', str(e))
+        notify("Shlink 发生错误, 自动退出", str(e))
         exit(1)
